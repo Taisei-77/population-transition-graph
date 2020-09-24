@@ -1,16 +1,16 @@
 import React from "react";
 import ReactDOM from "react-dom";
 
-import Test from "./App";
+import View from "./View";
 
-const Foo = () => {
+const Index = () => {
   return (
     <>
-      <Test />
+      <View />
     </>
   );
 };
 
 const root = document.getElementById("root");
 
-ReactDOM.render(<Foo />, root);
+ReactDOM.render(<Index />, root);

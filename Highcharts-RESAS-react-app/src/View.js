@@ -2,7 +2,7 @@ import React from "react";
 
 import Prefectures from "./Prefectures";
 
-const Test = () => {
+const View = () => {
   return (
     <div>
       <Prefectures />
@@ -10,4 +10,4 @@ const Test = () => {
   );
 };
 
-export default Test;
+export default View;

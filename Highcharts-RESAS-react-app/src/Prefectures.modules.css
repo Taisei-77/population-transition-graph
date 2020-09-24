@@ -1,0 +1,18 @@
+.title {
+  color: green;
+  font-size: 30px;
+  background-color: #d1f1cc;
+  text-align: center;
+}
+
+.prefecturesContainer {
+  color: #4d4951;
+  display: flex;
+  flex-wrap: wrap;
+  margin: 30px;
+}
+
+.prefecturesElement {
+  width: 100px;
+  margin: 5px;
+}

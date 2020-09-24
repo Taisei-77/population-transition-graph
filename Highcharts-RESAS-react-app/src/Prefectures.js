@@ -2,6 +2,7 @@ import React, { useEffect, useState } from "react";
 import axios from "axios";
 import Highcharts from "highcharts";
 import HighchartsReact from "highcharts-react-official";
+import "./Prefectures.modules.css";
 
 //RESASのAPIkey
 const apiKey = "0NEv0Ri2nZMNnApZ3qrtkDf0jCKuolBfrrIwx8d8";
@@ -17,10 +18,13 @@ const Prefectures = () => {
   const [selected, setSelected] = useState(Array(47).fill(false)); //チェックボックスにチェックが入っているかをtrueとfalseで判定する。
   const [prefectures, setPrefectures] = useState([]); //都道府県データを格納する。
   const [series, setSeries] = useState([]); //動的に取得した都道府県別の人口データを格納する。
-  //HighChartの設定
-  const options = {
+  const [chartOptions, setChartOptions] = useState({
     title: {
       text: "都道府県別の総人口推移",
+    },
+
+    subtitle: {
+      text: "（2015年以降は推計値）",
     },
 
     yAxis: {
@@ -35,24 +39,21 @@ const Prefectures = () => {
       },
     },
 
-    legend: {
-      layout: "vertical",
-      align: "right",
-      verticalAlign: "middle",
-    },
-
     plotOptions: {
+      label: {
+        connectorAllowed: false,
+      },
+
       series: {
-        label: {
-          connectorAllowed: false,
-        },
         pointStart: 1960,
         pointInterval: 5,
       },
     },
 
     series: series,
-  };
+  });
+
+  //HighChartの設定
 
   //初回レンダリング時に実行される。
   useEffect(() => {
@@ -65,7 +66,6 @@ const Prefectures = () => {
       await axios
         .get(PrefecturesApi, { headers: headers })
         .then((res) => {
-          console.log(res.data.result);
           //レスポンスから都道府県コードと都道府県名を取り出して、state : prefecturesに格納。
           setPrefectures(res.data.result);
         })
@@ -79,10 +79,7 @@ const Prefectures = () => {
   //都道府県チェックボックスの値が変わった際に実行される関数
   const changeSelected = (indexNumber) => {
     const selectedCopy = selected.slice();
-    //変更があった都道府県チェックボックスに対応している、select配列の値を反転させる。
     selectedCopy[indexNumber] = !selectedCopy[indexNumber];
-    console.log(selectedCopy);
-
     if (selectedCopy[indexNumber]) {
       //RESASのAPIにアクセスするためのリクエストヘッダー
       const headers = {
@@ -98,7 +95,7 @@ const Prefectures = () => {
             { headers: headers }
           )
           .then((res) => {
-            let populationData = []; //人口データを配列で保存するための変数
+            const populationData = []; //人口データを配列で保存するための変数
             //対象都道府県の総人口データ => res.data.result.data[0].data
             //レスポンスから人口データのみを抜き出して、populationDataに格納していく。
             res.data.result.data[0].data.forEach((element) => {
@@ -106,11 +103,15 @@ const Prefectures = () => {
             });
             //seriesに追加するためのデータを作る。
             const seriesData = {
-              name: prefectures[indexNumber].prefName,
               data: populationData,
+              name: prefectures[indexNumber].prefName,
             };
-            console.log([...series, seriesData]);
-            setSeries([...series, seriesData]);
+            setChartOptions({
+              ...chartOptions,
+              series: series.concat(seriesData),
+            });
+            setSeries(series.concat(seriesData));
+            setSelected(selectedCopy);
           })
           .catch((error) => {
             alert(error);
@@ -118,23 +119,26 @@ const Prefectures = () => {
       };
       getPopulation();
     } else {
-      //チェックが外された場合 =>　series配列から外された都道府県の人口データを取り除く。
-      const newSeries = [];
-      series.forEach((element) => {
-        if (element.name === prefectures[indexNumber].prefName) {
-        } else {
-          newSeries.push(element);
+      //チェックが外れた時
+      const seriesCopy = series;
+      for (let i = 0; i < seriesCopy.length; i++) {
+        if (seriesCopy[i].name === prefectures[indexNumber].prefName) {
+          seriesCopy.splice(i, 1);
         }
+      }
+      setChartOptions({
+        ...chartOptions,
+        series: seriesCopy,
       });
-      setSeries(newSeries);
+      setSeries(seriesCopy);
+      setSelected(selectedCopy);
     }
-    setSelected(selectedCopy);
   };
 
   //map()で各都道府県のデータを引数dataに渡して、要素を生成するための変数定義。
   const checkboxItem = (data) => {
     return (
-      <div key={data.prefCode}>
+      <div key={data.prefCode} className="prefecturesElement">
         <input
           type="checkbox"
           checked={selected[data.prefCode - 1]}
@@ -149,8 +153,15 @@ const Prefectures = () => {
 
   return (
     <div>
-      <div>{prefectures.map((data) => checkboxItem(data))}</div>
-      <HighchartsReact highcharts={Highcharts} options={options} />
+      <div className="title">都道府県別の総人口推移グラフ</div>
+      <div className="prefecturesContainer">
+        {prefectures.map((data) => checkboxItem(data))}
+      </div>
+      <HighchartsReact
+        highcharts={Highcharts}
+        immutable={true}
+        options={chartOptions}
+      />
     </div>
   );
 };
