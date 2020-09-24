@@ -5,9 +5,6 @@ import HighchartsReact from "highcharts-react-official";
 import "./Prefectures.modules.css";
 import myApiKey from "./ApiKey";
 
-//RESASのAPIkey
-const apiKey = "0NEv0Ri2nZMNnApZ3qrtkDf0jCKuolBfrrIwx8d8";
-
 //RESASの都道府県一覧を取得するためのAPI
 const PrefecturesApi = "https://opendata.resas-portal.go.jp/api/v1/prefectures";
 
@@ -54,13 +51,11 @@ const Prefectures = () => {
     series: series,
   });
 
-  //HighChartの設定
-
   //初回レンダリング時に実行される。
   useEffect(() => {
     //RESASのAPIにアクセスするためのリクエストヘッダー
     const headers = {
-      myApiKey: apiKey,
+      "X-API-KEY": myApiKey,
     };
     //RESASから47都道府県データを取得
     const getPrefecturesData = async () => {
@@ -84,7 +79,7 @@ const Prefectures = () => {
     if (selectedCopy[indexNumber]) {
       //RESASのAPIにアクセスするためのリクエストヘッダー
       const headers = {
-        myApiKey: apiKey,
+        "X-API-KEY": MyApiKey,
       };
       //人口構成を取得
       const getPopulation = async () => {
